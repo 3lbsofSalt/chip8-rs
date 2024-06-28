@@ -1,0 +1,116 @@
+// Writing the font to 0x050 to 0x09F
+pub fn write_font(ptr: *mut u8) {
+    unsafe {
+        // Font for 0
+        ptr.add(0x050).write(0xF0);
+        ptr.add(0x051).write(0x90);
+        ptr.add(0x052).write(0x90);
+        ptr.add(0x053).write(0x90);
+        ptr.add(0x054).write(0xF0);
+
+        // Font for 1
+        ptr.add(0x055).write(0x20);
+        ptr.add(0x056).write(0x60);
+        ptr.add(0x057).write(0x20);
+        ptr.add(0x058).write(0x20);
+        ptr.add(0x059).write(0x70);
+
+        // Font for 2
+        ptr.add(0x05A).write(0xF0);
+        ptr.add(0x05B).write(0x10);
+        ptr.add(0x05C).write(0xF0);
+        ptr.add(0x05D).write(0x80);
+        ptr.add(0x05E).write(0xF0);
+
+        // 3
+        ptr.add(0x05F).write(0xf0);
+        ptr.add(0x060).write(0x10);
+        ptr.add(0x061).write(0xf0);
+        ptr.add(0x062).write(0x10);
+        ptr.add(0x063).write(0xf0);
+
+        // 4
+        ptr.add(0x064).write(0x90);
+        ptr.add(0x065).write(0x90);
+        ptr.add(0x066).write(0xf0);
+        ptr.add(0x067).write(0x10);
+        ptr.add(0x068).write(0x10);
+        
+        // 5
+        ptr.add(0x069).write(0xf0);
+        ptr.add(0x06a).write(0x80);
+        ptr.add(0x06b).write(0xf0);
+        ptr.add(0x06c).write(0x10);
+        ptr.add(0x06d).write(0xf0);
+
+        // 6
+        ptr.add(0x06e).write(0xf0);
+        ptr.add(0x06f).write(0x80);
+        ptr.add(0x070).write(0xf0);
+        ptr.add(0x071).write(0x90);
+        ptr.add(0x072).write(0xf0);
+
+        // 7
+        ptr.add(0x073).write(0xf0);
+        ptr.add(0x074).write(0x10);
+        ptr.add(0x075).write(0x20);
+        ptr.add(0x076).write(0x40);
+        ptr.add(0x077).write(0x40);
+
+        // 8
+        ptr.add(0x078).write(0xf0);
+        ptr.add(0x079).write(0x90);
+        ptr.add(0x07a).write(0xf0);
+        ptr.add(0x07b).write(0x90);
+        ptr.add(0x07c).write(0xf0);
+
+        // 9
+        ptr.add(0x07d).write(0xf0);
+        ptr.add(0x07e).write(0x90);
+        ptr.add(0x07f).write(0xf0);
+        ptr.add(0x080).write(0x10);
+        ptr.add(0x081).write(0xf0);
+
+        // a
+        ptr.add(0x082).write(0xf0);
+        ptr.add(0x083).write(0x90);
+        ptr.add(0x084).write(0xf0);
+        ptr.add(0x085).write(0x90);
+        ptr.add(0x086).write(0x90);
+
+        // b
+        ptr.add(0x087).write(0xe0);
+        ptr.add(0x088).write(0x90);
+        ptr.add(0x089).write(0xe0);
+        ptr.add(0x08a).write(0x90);
+        ptr.add(0x08b).write(0xe0);
+
+        // c
+        ptr.add(0x08c).write(0xf0);
+        ptr.add(0x08d).write(0x80);
+        ptr.add(0x08e).write(0x80);
+        ptr.add(0x08f).write(0x80);
+        ptr.add(0x090).write(0xf0);
+
+        // d
+        ptr.add(0x091).write(0xe0);
+        ptr.add(0x092).write(0x90);
+        ptr.add(0x093).write(0x90);
+        ptr.add(0x094).write(0x90);
+        ptr.add(0x095).write(0xe0);
+
+        // e
+        ptr.add(0x096).write(0xf0);
+        ptr.add(0x097).write(0x80);
+        ptr.add(0x098).write(0xf0);
+        ptr.add(0x099).write(0x80);
+        ptr.add(0x09a).write(0xf0);
+
+        // f
+        ptr.add(0x09b).write(0xf0);
+        ptr.add(0x09c).write(0x80);
+        ptr.add(0x09d).write(0xf0);
+        ptr.add(0x09e).write(0x80);
+        ptr.add(0x09f).write(0x80);
+    }
+}
