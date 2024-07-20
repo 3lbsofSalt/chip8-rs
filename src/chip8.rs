@@ -153,11 +153,12 @@ impl Chip8 {
                 let keys_pressed = self.check_keys_pressed();
                 let key_reg = ((0x0F00 & instruction) >> 8) as usize;
                 let key = self.registers[key_reg];
-                if (0x009E & instruction) > 0 {
+                let which = 0x00FF & instruction;
+                if which == 0x009E {
                     if keys_pressed[key as usize] {
                         self.pc += 2;
                     }
-                } else if (0x00A1 & instruction) > 0 {
+                } else if which == 0x00A1 {
                     if !keys_pressed[key as usize] {
                         self.pc += 2;
                     }
