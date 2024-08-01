@@ -4,7 +4,7 @@ use sdl2::{audio::{AudioCallback, AudioDevice, AudioSpecDesired}, event::Event, 
 
 use crate::font::write_font;
 const LOOPS_PER_SECOND: u128 = 60;
-const INSTRUCTIONS_PER_SECOND: u128 = 700; 
+const INSTRUCTIONS_PER_SECOND: u128 = 500; 
 const OLD_SHIFT_FUNCTIONALITY: bool = false;
 const B_JUMP_REG_OFFSET: bool = false;
 
@@ -48,6 +48,7 @@ impl Chip8 {
                 if instruction == 0x00EE { self.pc = self.stack.pop().unwrap(); }
             },
             0x1 => { 
+
                 let jump_location = 0x0FFF & instruction;
                 self.pc = jump_location;
             },
@@ -91,26 +92,31 @@ impl Chip8 {
                     0x0002 => { self.registers[x] = self.registers[x] & self.registers[y]; },
                     0x0003 => { self.registers[x] = self.registers[x] ^ self.registers[y]; },
                     0x0004 => { 
-                        self.registers[0xF] = if self.registers[x].checked_add(self.registers[y]) == None { 1 } else { 0 };
+                        let flag = if self.registers[x].checked_add(self.registers[y]) == None { 1 } else { 0 };
                         self.registers[x] = self.registers[x].wrapping_add(self.registers[y]); 
+                        self.registers[0xF] = flag;
                     },
                     0x0005 => {
-                        self.registers[0xF] = if self.registers[x].checked_sub(self.registers[y]) == None { 0 } else { 1 };
+                        let flag = if self.registers[x] >= self.registers[y] { 1 } else { 0 };
                         self.registers[x] = self.registers[x].wrapping_sub(self.registers[y]); 
+                        self.registers[0xF] = flag;
                     },
                     0x0006 => {
+                        let flag = if (0b00000001 & self.registers[x]) > 0 { 1 } else { 0 };
                         if OLD_SHIFT_FUNCTIONALITY { self.registers[x] = self.registers[y]; }
-                        self.registers[0xF] = if (0b00000001 & self.registers[x]) > 0 { 1 } else { 0 };
                         self.registers[x] >>= 1;
+                        self.registers[0xF] = flag;
                     },
                     0x0007 => {
-                        self.registers[0xF] = if self.registers[y].checked_sub(self.registers[x]) == None { 0 } else { 1 };
+                        let flag = if self.registers[y] >= self.registers[x] { 1 } else { 0 };
                         self.registers[x] = self.registers[y].wrapping_sub(self.registers[x]); 
+                        self.registers[0xF] = flag;
                     },
                     0x000E => {
                         if OLD_SHIFT_FUNCTIONALITY { self.registers[x] = self.registers[y]; }
-                        self.registers[0xF] = if (0b10000000 & self.registers[x]) > 0 { 1 } else { 0 };
+                        let flag = if (0b10000000 & self.registers[x]) > 0 { 1 } else { 0 };
                         self.registers[x] <<= 1;
+                        self.registers[0xF] = flag;
                     },
                     _ => { panic!("There should absolutely be a last nibble on an 0x8XYN instruction")}
                 }
@@ -154,7 +160,9 @@ impl Chip8 {
                 let key_reg = ((0x0F00 & instruction) >> 8) as usize;
                 let key = self.registers[key_reg];
                 let which = 0x00FF & instruction;
+                //println!("{:?}", keys_pressed);
                 if which == 0x009E {
+
                     if keys_pressed[key as usize] {
                         self.pc += 2;
                     }
@@ -169,12 +177,6 @@ impl Chip8 {
                 let reg = ((0x0F00 & instruction) >> 8) as usize;
                 match second_half {
                     0x07 => { self.registers[reg] = self.delay_timer; },
-                    0x15 => { self.delay_timer = self.registers[reg]; }
-                    0x18 => { self.sound_timer = self.registers[reg]; }
-                    0x1E => { 
-                        if self.register_i + self.registers[reg] as u16 >= 0x1000 { self.registers[0xF] = 1; }
-                        self.register_i += self.registers[reg] as u16;
-                    },
                     0x0A => { // Repeat until a key is pressed
                         let keys_pressed = self.check_keys_pressed();
                         let mut key_pressed = 1000;
@@ -191,11 +193,18 @@ impl Chip8 {
                             self.registers[reg] = key_pressed as u8;
                         }
                     },
+                    0x15 => { self.delay_timer = self.registers[reg]; }
+                    0x18 => { self.sound_timer = self.registers[reg]; }
+                    0x1E => { 
+                        if self.register_i + self.registers[reg] as u16 >= 0x1000 { self.registers[0xF] = 1; }
+                        self.register_i += self.registers[reg] as u16;
+                    },
                     0x29 => {
                         let character = self.registers[reg] & 0x0F;
                         // 0x050 is the first address for the font, and each character is 5 bytes long.
                         // See font.rs
                         self.register_i = 0x050 + (5 * character) as u16;
+
                     },
                     0x33 => {
                         let num = self.registers[reg];
@@ -310,9 +319,10 @@ impl Chip8 {
             }
         }).unwrap();
 
-        let memory: [u8; 4096] = [0; 4096];
+        let mut memory: [u8; 4096] = [0; 4096];
 
-        write_font(memory);
+        write_font(&mut memory);
+        println!("{:?}", memory);
         let registers: [u8; 16] = [0; 16];
 
         Chip8 {
@@ -334,6 +344,8 @@ impl Chip8 {
 
     pub fn draw_sprite(&mut self, i: u16, bytes: u8, offset_x: u8, offset_y: u8) {
         self.registers[0xF] = 0;
+        let offset_x = offset_x % 64;
+        let offset_y = offset_y % 32;
         for byte_num in 0..bytes { // Each byte is a horizontal row in the sprite
             let byte: u8;
             byte = self.memory[(i + byte_num as u16) as usize];

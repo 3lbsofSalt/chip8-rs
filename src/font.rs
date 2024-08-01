@@ -1,5 +1,5 @@
 // Writing the font to 0x050 to 0x09F
-pub fn write_font(mut ptr: [u8; 4096]) {
+pub fn write_font(ptr: &mut [u8; 4096]) {
     // Font for 0
     ptr[0x050] = 0xF0;
     ptr[0x051] = 0x90;
@@ -111,4 +111,5 @@ pub fn write_font(mut ptr: [u8; 4096]) {
     ptr[0x09d] = 0xf0;
     ptr[0x09e] = 0x80;
     ptr[0x09f] = 0x80;
+    println!("{:?}", ptr);
 }
