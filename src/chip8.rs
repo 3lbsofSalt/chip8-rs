@@ -4,9 +4,13 @@ use sdl2::{audio::{AudioCallback, AudioDevice, AudioSpecDesired}, event::Event, 
 
 use crate::font::write_font;
 
+
 // CONFIG
+const DARK_COLOR: Color = Color::RGB(188, 107, 184);
+const LIGHT_COLOR: Color = Color::RGB(141, 173, 104);
+
 const LOOPS_PER_SECOND: u128 = 240;
-const INSTRUCTIONS_PER_SECOND: u128 = 700; 
+const INSTRUCTIONS_PER_SECOND: u128 = 2600; 
 
 const OLD_SHIFT_FUNCTIONALITY: bool = true;
 const B_JUMP_REG_OFFSET: bool = false;
@@ -316,7 +320,7 @@ impl Chip8 {
 
         let mut canvas = window.into_canvas().build().unwrap();
 
-        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        canvas.set_draw_color(DARK_COLOR);
 
         let size = canvas.window().size(); 
         let pixel_width = size.0 / 64;
@@ -403,8 +407,8 @@ impl Chip8 {
 
     pub fn display(&mut self) {
         
-        let black = Color::RGB(0, 0, 0);
-        let white = Color::RGB(255, 255, 255);
+        let black = LIGHT_COLOR;
+        let white = DARK_COLOR;
 
         for (y_index ,row) in self.pixels.iter().enumerate() {
             for (x_index, pixel) in row.iter().enumerate() {
