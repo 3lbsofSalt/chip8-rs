@@ -3,13 +3,14 @@ use rand::Rng;
 use sdl2::{audio::{AudioCallback, AudioDevice, AudioSpecDesired}, event::Event, keyboard::Scancode, pixels::Color, rect::Rect, render::Canvas, video::Window, EventPump};
 
 use crate::font::write_font;
-const LOOPS_PER_SECOND: u128 = 240;
-const INSTRUCTIONS_PER_SECOND: u128 = 60000; 
 
 // CONFIG
+const LOOPS_PER_SECOND: u128 = 240;
+const INSTRUCTIONS_PER_SECOND: u128 = 700; 
+
 const OLD_SHIFT_FUNCTIONALITY: bool = true;
 const B_JUMP_REG_OFFSET: bool = false;
-const MOVABLE_INDEX_ON_SAVE_LOAD: bool = true;
+const MOVABLE_INDEX_ON_SAVE_LOAD: bool = false;
 const WRAP_SPRITES: bool = true;
 
 pub struct Chip8 {
@@ -38,11 +39,18 @@ impl Chip8 {
     }
 
     fn single_instruction(&mut self) {
+        self.check_keys_pressed();
         let instruction: u16;
         instruction = u16::from(self.memory[self.pc as usize]) << 8 | u16::from(self.memory[(self.pc + 1) as usize]) << 0;
         println!("Instruction: {:04X}, PC: {:012X}", instruction, self.pc);
 
         self.pc += 2;
+
+        if self.pc == (0x3BC + 0x002) {
+            // Spot for easy breakpoint based on pc addresses
+            println!("breakpoint");
+
+        }
 
         let first_nibble = (instruction & 0xF000) >> 12;
 
