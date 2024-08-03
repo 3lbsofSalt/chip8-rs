@@ -3,10 +3,14 @@ use rand::Rng;
 use sdl2::{audio::{AudioCallback, AudioDevice, AudioSpecDesired}, event::Event, keyboard::Scancode, pixels::Color, rect::Rect, render::Canvas, video::Window, EventPump};
 
 use crate::font::write_font;
-const LOOPS_PER_SECOND: u128 = 60;
-const INSTRUCTIONS_PER_SECOND: u128 = 500; 
-const OLD_SHIFT_FUNCTIONALITY: bool = false;
+const LOOPS_PER_SECOND: u128 = 240;
+const INSTRUCTIONS_PER_SECOND: u128 = 60000; 
+
+// CONFIG
+const OLD_SHIFT_FUNCTIONALITY: bool = true;
 const B_JUMP_REG_OFFSET: bool = false;
+const MOVABLE_INDEX_ON_SAVE_LOAD: bool = true;
+const WRAP_SPRITES: bool = true;
 
 pub struct Chip8 {
     pixels: Vec<Vec<bool>>,
@@ -36,7 +40,7 @@ impl Chip8 {
     fn single_instruction(&mut self) {
         let instruction: u16;
         instruction = u16::from(self.memory[self.pc as usize]) << 8 | u16::from(self.memory[(self.pc + 1) as usize]) << 0;
-        //println!("Instruction: {:04X}, PC: {:012X}", instruction, self.pc);
+        println!("Instruction: {:04X}, PC: {:012X}", instruction, self.pc);
 
         self.pc += 2;
 
@@ -127,6 +131,7 @@ impl Chip8 {
                 if self.registers[reg_x] != self.registers[reg_y] { self.pc += 2; }
             },
             0xA => { 
+
                 self.register_i = instruction & 0x0FFF; 
             },
             0xB => {
@@ -178,6 +183,7 @@ impl Chip8 {
                 match second_half {
                     0x07 => { self.registers[reg] = self.delay_timer; },
                     0x0A => { // Repeat until a key is pressed
+                        
                         let keys_pressed = self.check_keys_pressed();
                         let mut key_pressed = 1000;
                         for (i, key) in keys_pressed.as_ref().iter().enumerate() {
@@ -212,8 +218,19 @@ impl Chip8 {
                         self.memory[(self.register_i + 1) as usize] = (num / 10) % 10;
                         self.memory[(self.register_i + 2) as usize] = num % 10;
                     }, 
-                    0x55 => { for num in 0..=reg { self.memory[self.register_i as usize + num] = self.registers[num]; }},
-                    0x65 => { for num in 0..=reg { self.registers[num] = self.memory[self.register_i as usize + num]; }}
+                    0x55 => { 
+
+                        for num in 0..=reg { 
+                            self.memory[self.register_i as usize + num] = self.registers[num]; 
+                            if MOVABLE_INDEX_ON_SAVE_LOAD { self.register_i += 1; }
+                        }
+                    },
+                    0x65 => { 
+                        for num in 0..=reg { 
+                            self.registers[num] = self.memory[self.register_i as usize + num]; 
+                            if MOVABLE_INDEX_ON_SAVE_LOAD { self.register_i += 1; }
+                        }
+                    }
                     _ => { panic!("There was an error with an 0xF type instruction!"); }
                 }
             },
@@ -322,7 +339,7 @@ impl Chip8 {
         let mut memory: [u8; 4096] = [0; 4096];
 
         write_font(&mut memory);
-        println!("{:?}", memory);
+        //println!("{:?}", memory);
         let registers: [u8; 16] = [0; 16];
 
         Chip8 {
@@ -353,9 +370,14 @@ impl Chip8 {
                 let mask = 1 << 7 - bit;
                 let bit_set = (mask & byte) > 0;
                 if bit_set {
-                    let y_coord = (offset_y + byte_num as u8) as usize;
-                    let x_coord = (offset_x + bit) as usize;
-                    if x_coord >= 64 || y_coord >= 32 { continue; }
+                    let mut y_coord = (offset_y + byte_num as u8) as usize;
+                    let mut x_coord = (offset_x + bit) as usize;
+                    if (x_coord >= 64 || y_coord >= 32) && !WRAP_SPRITES { 
+                        continue; 
+                    } else {
+                        x_coord %= 64;
+                        y_coord %= 32;
+                    }
                     if self.pixels[y_coord][x_coord] { self.registers[0xF] = 1; }
                     self.pixels[y_coord][x_coord] = !self.pixels[y_coord][x_coord];
                 }

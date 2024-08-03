@@ -111,5 +111,4 @@ pub fn write_font(ptr: &mut [u8; 4096]) {
     ptr[0x09d] = 0xf0;
     ptr[0x09e] = 0x80;
     ptr[0x09f] = 0x80;
-    println!("{:?}", ptr);
 }
